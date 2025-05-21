@@ -81,9 +81,15 @@ def tidal_analysis(data, constituents, start_datetime):
 
 
 def get_longest_contiguous_data(data):
+    sorted_data = data.copy()
+    sorted_data = sorted_data.sort_index()
+    diffs = sorted_data.index.to_series().diff().dt.total_seconds().fillna(0)
+    group = (diffs != 3600).cumsum()
+    longest_group = group.value_counts().idxmax()
+    contiguous_data = sorted_data[group == longest_group]
+    return contiguous_data
 
-
-    return 
+ 
 
 if __name__ == '__main__':
 
