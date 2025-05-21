@@ -1,11 +1,26 @@
 #!/usr/bin/env python3
 
 # import the modules you need here
-
 import argparse
 
 def read_tidal_data(filename):
 
+    df = pd.read_csv(
+        filename,
+        sep=r'\s+',
+        skiprows=11,
+        header=None,
+        names=[
+            "Cycle", "Date", "Time", "Sea Level", "Residual"
+        ]
+    )
+    df["datetime"] = pd.to_datetime(
+        df["Date"] + " " + df["Time"],
+        format="%Y/%m/%d %H:%M:%S"
+    )
+    df.set_index("datetime", inplace=True)
+    df["Sea Level"] = pd.to_numeric(df["Sea Level"], errors="coerce")
+    return df
     return 0
     
 def extract_single_year_remove_mean(year, data):
