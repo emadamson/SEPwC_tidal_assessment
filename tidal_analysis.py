@@ -7,11 +7,9 @@ import glob
 import argparse
 import pandas as pd
 
-
-
 def read_tidal_data(filename):
 
-    df = pd.read_csv(
+    data = pd.read_csv(
         filename,
         sep=r'\s+',
         skiprows=11,
@@ -20,25 +18,22 @@ def read_tidal_data(filename):
             "Cycle", "Date", "Time", "Sea Level", "Residual"
         ]
     )
-    df["datetime"] = pd.to_datetime(
-        df["Date"] + " " + df["Time"],
+    data["datetime"] = pd.to_datetime(
+        data["Date"] + " " + data["Time"],
         format="%Y/%m/%d %H:%M:%S"
     )
-    df.set_index("datetime", inplace=True)
-    df["Sea Level"] = pd.to_numeric(df["Sea Level"], errors="coerce")
-    return df
+    data.set_index("datetime", inplace=True)
+    data["Sea Level"] = pd.to_numeric(data["Sea Level"], errors="coerce")
+    return data
     return 0
     
 def extract_single_year_remove_mean(year, data):
     year = int(year)
-    year_df = df[df.index.year == year].copy()
-    if year_df.empty:
-        return pd.DataFrame(columns=df.columns)
-    year_df["Sea Level"] = year_df["Sea Level"] - year_df["Sea Level"].mean()
-    return year_df
-
-
-
+    year_data = data[data.index.year == year].copy()
+    if year_data.empty:
+        return pd.DataFrame(columns=data.columns)
+    year_data["Sea Level"] = year_data["Sea Level"] - year_data["Sea Level"].mean()
+    return year_data
 
 def extract_section_remove_mean(start, end, data):
     def parse_date(date_str):
@@ -52,23 +47,17 @@ def extract_section_remove_mean(start, end, data):
     end_dt = parse_date(end)
     if len(end) == 8:
         end_dt = end_dt.replace(hour=23)
-    section_df = df[(df.index >= start_dt) & (df.index <= end_dt)].copy()
-    section_df = section_df.loc[start_dt:end_dt]
-    if section_df.empty:
-        return pd.DataFrame(columns=df.columns)
-    section_df["Sea Level"] = section_df["Sea Level"] - section_df["Sea Level"].mean()
-    return section_df
-
-    
-
+    section_data = data[(data.index >= start_dt) & (data.index <= end_dt)].copy()
+    section_data = section_data.loc[start_dt:end_dt]
+    if section_data.empty:
+        return pd.DataFrame(columns=data.columns)
+    section_data["Sea Level"] = section_data["Sea Level"] - section_data["Sea Level"].mean()
+    return section_data
 
 def join_data(data1, data2):
-    combined = pd.concat([df1, df2])
+    combined = pd.concat([data1, data2])
     combined = combined.sort_index()
     return combined
-
-
-
 
 def sea_level_rise(data):
 
@@ -103,6 +92,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     dirname = args.directory
     verbose = args.verbose
-    
+
 
 
