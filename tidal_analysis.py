@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 
 # import the modules you need here
+import os
+import sys
+import glob
 import argparse
+import pandas as pd
+
+
 
 def read_tidal_data(filename):
 
@@ -24,7 +30,12 @@ def read_tidal_data(filename):
     return 0
     
 def extract_single_year_remove_mean(year, data):
-   
+       year = int(year)
+    year_df = df[df.index.year == year].copy()
+    if year_df.empty:
+        return pd.DataFrame(columns=df.columns)
+    year_df["Sea Level"] = year_df["Sea Level"] - year_df["Sea Level"].mean()
+    return year_df
 
     return 
 
