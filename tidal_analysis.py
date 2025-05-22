@@ -52,15 +52,18 @@ def extract_section_remove_mean(start, end, data):
 
     end_dt = parse_date_internal(end, is_end_date=True)
 
-    if not df.index.is_monotonic_increasing:
-        df_sorted = df.sort_index()
+    if not data.index.is_monotonic_increasing:
+        data_sorted = data.sort_index()
     else:
-        df_sorted = df
+        data_sorted = data
 
-    section_data = section_data.loc[start_dt:end_dt]
+   section_data = data_sorted.loc[start_dt:end_dt].copy()
+
     if section_data.empty:
         return pd.DataFrame(columns=data.columns)
-    section_data["Sea Level"] = section_data["Sea Level"] - section_data["Sea Level"].mean()
+
+    section_data["Sea Level"] -= section_data["Sea Level"].mean()
+
     return section_data
 
 def join_data(data1, data2):
