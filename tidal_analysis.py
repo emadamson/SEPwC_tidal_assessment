@@ -39,14 +39,14 @@ def extract_single_year_remove_mean(year, data):
     return year_data
 
 def extract_section_remove_mean(start, end, data):
-def parse_date_internal(date_str_param, is_end_date=False):
-    if len(date_str_param) == 10:  # Format YYYYMMDDHH
-        return pd.to_datetime(date_str_param, format="%Y%m%d%H")
-    if len(date_str_param) == 8:  # Format YYYYMMDD
-        if is_end_date:
-            return pd.to_datetime(date_str_param + "23", format="%Y%m%d%H")
-        return pd.to_datetime(date_str_param + "00", format="%Y%m%d%H")
-    raise ValueError(f"Invalid date format: {date_str_param}")
+    def parse_date_internal(date_str_param, is_end_date=False):
+        if len(date_str_param) == 10:  # Format YYYYMMDDHH
+            return pd.to_datetime(date_str_param, format="%Y%m%d%H")
+        if len(date_str_param) == 8:  # Format YYYYMMDD
+            if is_end_date:
+                return pd.to_datetime(date_str_param + "23", format="%Y%m%d%H")
+            return pd.to_datetime(date_str_param + "00", format="%Y%m%d%H")
+        raise ValueError(f"Invalid date format: {date_str_param}")
 
     start_dt = parse_date(start)
     if len(start) == 8:
