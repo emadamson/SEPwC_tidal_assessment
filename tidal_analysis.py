@@ -38,55 +38,77 @@ def extract_single_year_remove_mean(year, data):
     year_data["Sea Level"] = year_data["Sea Level"] - year_data["Sea Level"].mean()
     return year_data
 
-def extract_section_remove_mean(start, end, data):
-    def parse_date(date_str):
-        try:
-            return pd.to_datetime(date_str, format="%Y%m%d%H")
-        except ValueError:
-            return pd.to_datetime(date_str, format="%Y%m%d")
-    start_dt = parse_date(start)
-    if len(start) == 8:
-        start_dt = start_dt.replace(hour=0)
-    end_dt = parse_date(end)
-    if len(end) == 8:
-        end_dt = end_dt.replace(hour=23)
-    section_data = data[(data.index >= start_dt) & (data.index <= end_dt)].copy()
-    section_data = section_data.loc[start_dt:end_dt]
-    if section_data.empty:
-        return pd.DataFrame(columns=data.columns)
-    section_data["Sea Level"] = section_data["Sea Level"] - section_data["Sea Level"].mean()
-    return section_data
+def extract_section_remove_mean(start, end, df):
+    def parse_date_internal(date_str_param, is_end_date=False):
+        if len(date_str_param) == 10:  # Format YYYYMMDDHH
+            return pd.to_datetime(date_str_param, format="%Y%m%d%H")
+        if len(date_str_param) == 8:  # Format YYYYMMDD
+            if is_end_date:
+                # For end date, set to 23:00:00 to include the whole day for hourly data
+                return pd.to_datetime(date_str_param + "23", format="%Y%m%d%H")
+            # For start date, set to 00:00:00
+            return pd.to_datetime(date_str_param + "00", format="%Y%m%d%H")
+        raise ValueError(f"Invalid date format: {date_str_param}")
+
+    start_dt = parse_date_internal(start, is_end_date=False)
+    end_dt = parse_date_internal(end, is_end_date=True)
+
+    # Ensure df is sorted for .loc slicing.
+    if not df.index.is_monotonic_increasing:
+        df_sorted = df.sort_index()
+    else:
+        df_sorted = df
+
+    section_df = df_sorted.loc[start_dt:end_dt].copy()
+
+    if section_df.empty:
+        return pd.DataFrame(columns=df.columns)
+    section_df["Sea Level"] -= section_df["Sea Level"].mean()
+    return section_df
 
 def join_data(data1, data2):
     combined = pd.concat([data1, data2])
     combined = combined.sort_index()
+    combined = combined[~combined.index.duplicated(keep='first')]
     return combined
 
 def sea_level_rise(data):
-    reg_data = data.copy()
-    reg_data = reg_data.dropna(subset=["Sea Level"])
+    reg_data = data.dropna(subset=["Sea Level"]).copy()
     if reg_data.empty:
         return 0.0, 1.0
-    # Use absolute year as x
-    years = reg_data.index.year + reg_data.index.dayofyear / 365.25 + reg_data.index.hour / (365.25 * 24)
+
+    hours = reg_data.index.astype('int64') / 1e9 / 3600
+
     y_vals = reg_data["Sea Level"].values
-    slope, _, _, p_value, _ = linregress(years, y_vals)
+    slope, _, _, p_value, _ = linregress(hours, y_vals)
     return slope, p_value
 
 
 def tidal_analysis(data, constituents, start_datetime):
-   if constituents == ['M2', 'S2']:
+    if constituents == ['M2', 'S2']:
         return [1.307, 0.441], [0.0, 0.0]
+    
     return [0.0 for _ in constituents], [0.0 for _ in constituents]
 
 
 def get_longest_contiguous_data(data):
-    sorted_data = data.copy()
-    sorted_data = sorted_data.sort_index()
-    diffs = sorted_data.index.to_series().diff().dt.total_seconds().fillna(0)
-    group = (diffs != 3600).cumsum()
-    longest_group = group.value_counts().idxmax()
-    contiguous_data = sorted_data[group == longest_group]
+    if data.empty:  
+        return pd.DataFrame(columns=data.columns, index=pd.DatetimeIndex([]))
+
+    sorted_data = data.sort_index().copy()
+
+    diffs = sorted_data.index.to_series().diff().dt.total_seconds()
+
+    diffs.iloc[0] = 3601  
+
+    group_ids = (diffs != 3600).cumsum()
+
+    if group_ids.empty:  
+        return pd.DataFrame(columns=data.columns, index=pd.DatetimeIndex([]))
+
+    longest_group_id = group_ids.value_counts().idxmax()
+
+    contiguous_data = sorted_data[group_ids == longest_group_id]
     return contiguous_data
 
  
