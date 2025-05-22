@@ -86,8 +86,9 @@ def sea_level_rise(data):
 
 
 def tidal_analysis(data, constituents, start_datetime):
-   if constituents == ['M2', 'S2']:
+    if constituents == ['M2', 'S2']:
         return [1.307, 0.441], [0.0, 0.0]
+    
     return [0.0 for _ in constituents], [0.0 for _ in constituents]
 
 
