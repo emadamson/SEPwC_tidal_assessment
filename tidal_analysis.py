@@ -52,8 +52,11 @@ def extract_section_remove_mean(start, end, data):
 
     end_dt = parse_date_internal(end, is_end_date=True)
 
+    if not df.index.is_monotonic_increasing:
+        df_sorted = df.sort_index()
+    else:
+        df_sorted = df
 
-    section_data = data[(data.index >= start_dt) & (data.index <= end_dt)].copy()
     section_data = section_data.loc[start_dt:end_dt]
     if section_data.empty:
         return pd.DataFrame(columns=data.columns)
