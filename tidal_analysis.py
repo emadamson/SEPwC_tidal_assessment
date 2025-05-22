@@ -48,12 +48,11 @@ def extract_section_remove_mean(start, end, data):
             return pd.to_datetime(date_str_param + "00", format="%Y%m%d%H")
         raise ValueError(f"Invalid date format: {date_str_param}")
 
-    start_dt = parse_date(start)
-    if len(start) == 8:
-        start_dt = start_dt.replace(hour=0)
-    end_dt = parse_date(end)
-    if len(end) == 8:
-        end_dt = end_dt.replace(hour=23)
+    start_dt = parse_date_internal(start, is_end_date=False)
+
+    end_dt = parse_date_internal(end, is_end_date=True)
+
+
     section_data = data[(data.index >= start_dt) & (data.index <= end_dt)].copy()
     section_data = section_data.loc[start_dt:end_dt]
     if section_data.empty:
