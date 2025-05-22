@@ -73,12 +73,13 @@ def join_data(data1, data2):
     return combined
 
 def sea_level_rise(data):
-    reg_data = data.copy()
-    reg_data = reg_data.dropna(subset=["Sea Level"])
+    reg_data = data.dropna(subset=["Sea Level"]).copy()
     if reg_data.empty:
         return 0.0, 1.0
     # Use absolute year as x
-    years = reg_data.index.year + reg_data.index.dayofyear / 365.25 + reg_data.index.hour / (365.25 * 24)
+    time_origin = reg_data.index[0]
+    seconds_in_year = 365.25 * 24 * 3600
+    years = (reg_data.index - time_origin).total_seconds() / seconds_in_year
     y_vals = reg_data["Sea Level"].values
     slope, _, _, p_value, _ = linregress(years, y_vals)
     return slope, p_value
