@@ -38,33 +38,33 @@ def extract_single_year_remove_mean(year, data):
     year_data["Sea Level"] = year_data["Sea Level"] - year_data["Sea Level"].mean()
     return year_data
 
-def extract_section_remove_mean(start, end, data):
+def extract_section_remove_mean(start, end, df):
     def parse_date_internal(date_str_param, is_end_date=False):
         if len(date_str_param) == 10:  # Format YYYYMMDDHH
             return pd.to_datetime(date_str_param, format="%Y%m%d%H")
         if len(date_str_param) == 8:  # Format YYYYMMDD
             if is_end_date:
+                # For end date, set to 23:00:00 to include the whole day for hourly data
                 return pd.to_datetime(date_str_param + "23", format="%Y%m%d%H")
+            # For start date, set to 00:00:00
             return pd.to_datetime(date_str_param + "00", format="%Y%m%d%H")
         raise ValueError(f"Invalid date format: {date_str_param}")
 
     start_dt = parse_date_internal(start, is_end_date=False)
-
     end_dt = parse_date_internal(end, is_end_date=True)
 
-    if not data.index.is_monotonic_increasing:
-        data_sorted = data.sort_index()
+    # Ensure df is sorted for .loc slicing.
+    if not df.index.is_monotonic_increasing:
+        df_sorted = df.sort_index()
     else:
-        data_sorted = data
+        df_sorted = df
 
-   section_data = data_sorted.loc[start_dt:end_dt].copy()
+    section_df = df_sorted.loc[start_dt:end_dt].copy()
 
-    if section_data.empty:
-        return pd.DataFrame(columns=data.columns)
-
-    section_data["Sea Level"] -= section_data["Sea Level"].mean()
-
-    return section_data
+    if section_df.empty:
+        return pd.DataFrame(columns=df.columns)
+    section_df["Sea Level"] -= section_df["Sea Level"].mean()
+    return section_df
 
 def join_data(data1, data2):
     combined = pd.concat([data1, data2])
