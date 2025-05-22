@@ -76,12 +76,11 @@ def sea_level_rise(data):
     reg_data = data.dropna(subset=["Sea Level"]).copy()
     if reg_data.empty:
         return 0.0, 1.0
-    # Use absolute year as x
-    time_origin = reg_data.index[0]
-    seconds_in_year = 365.25 * 24 * 3600
-    years = (reg_data.index - time_origin).total_seconds() / seconds_in_year
+
+    hours = reg_data.index.astype('int64') / 1e9 / 3600
+
     y_vals = reg_data["Sea Level"].values
-    slope, _, _, p_value, _ = linregress(years, y_vals)
+    slope, _, _, p_value, _ = linregress(hours, y_vals)
     return slope, p_value
 
 
