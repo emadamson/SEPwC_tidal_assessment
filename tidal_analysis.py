@@ -69,6 +69,7 @@ def extract_section_remove_mean(start, end, df):
 def join_data(data1, data2):
     combined = pd.concat([data1, data2])
     combined = combined.sort_index()
+    combined = combined[~combined.index.duplicated(keep='first')]
     return combined
 
 def sea_level_rise(data):
