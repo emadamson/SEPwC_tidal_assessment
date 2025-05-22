@@ -92,12 +92,23 @@ def tidal_analysis(data, constituents, start_datetime):
 
 
 def get_longest_contiguous_data(data):
-    sorted_data = data.copy()
-    sorted_data = sorted_data.sort_index()
-    diffs = sorted_data.index.to_series().diff().dt.total_seconds().fillna(0)
-    group = (diffs != 3600).cumsum()
-    longest_group = group.value_counts().idxmax()
-    contiguous_data = sorted_data[group == longest_group]
+    if data.empty:  
+        return pd.DataFrame(columns=data.columns, index=pd.DatetimeIndex([]))
+
+    sorted_data = data.sort_index().copy()
+
+    diffs = sorted_data.index.to_series().diff().dt.total_seconds()
+
+    diffs.iloc[0] = 3601  
+
+    group_ids = (diffs != 3600).cumsum()
+
+    if group_ids.empty:  
+        return pd.DataFrame(columns=data.columns, index=pd.DatetimeIndex([]))
+
+    longest_group_id = group_ids.value_counts().idxmax()
+
+    contiguous_data = sorted_data[group_ids == longest_group_id]
     return contiguous_data
 
  
