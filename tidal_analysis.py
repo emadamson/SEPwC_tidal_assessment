@@ -1,6 +1,9 @@
-#!/usr/bin/env python3
+# Copyright 2025, Emily Adamson.
+"""
+This script provides a set of functions to analyze tidal data from tide gauge measurements. 
 
-# import the modules you need here
+"""
+
 import os
 import sys
 import glob
@@ -139,6 +142,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     dirname = args.directory
     verbose = args.verbose
+
 
 
 
