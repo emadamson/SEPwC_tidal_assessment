@@ -11,7 +11,7 @@ from scipy.stats import linregress
 
 
 def read_tidal_data(filename):
- """Read tidal data from a text file."""
+    """Read tidal data from a text file."""
     data = pd.read_csv(
         filename,
         sep=r'\s+',
@@ -28,7 +28,7 @@ def read_tidal_data(filename):
     data.set_index("datetime", inplace=True)
     data["Sea Level"] = pd.to_numeric(data["Sea Level"], errors="coerce")
     return data
-    return 0
+   
     
 
 def extract_single_year_remove_mean(year, data):
@@ -70,7 +70,7 @@ def extract_section_remove_mean(start, end, df):
     return section_df
 
 def join_data(data1, data2):
-     """Join two dataframes, sort by index, and remove duplicate timestamps."""
+    """Join two dataframes, sort by index, and remove duplicate timestamps."""
     combined = pd.concat([data1, data2])
     combined = combined.sort_index()
     # Keeps the first occurrence in case of duplicate indices
